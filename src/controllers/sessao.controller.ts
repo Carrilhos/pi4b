@@ -118,3 +118,24 @@ export async function listarSessoes(req: Request, res: Response, next: NextFunct
     next(erro);
   }
 }
+
+// GET /sessoes/:id
+export async function buscarSessao(req: Request, res: Response, next: NextFunction) {
+  try {
+    const texto = String(req.params.id);
+
+    // Aceita só dígitos (barra "abc", "-1" e "1.5") e valor entre 1 e o maior INTEGER do Postgres
+    const valido = /^\d+$/.test(texto) && Number(texto) >= 1 && Number(texto) <= 2147483647;
+
+    if (!valido) {
+      throw new ErroNegocio(400, 'REQUISICAO_INVALIDA', 'Dados inválidos na requisição.', [
+        { campo: 'id', problema: 'deve ser um inteiro positivo' },
+      ]);
+    }
+
+    const sessao = await sessaoService.buscarSessao(Number(texto));
+    res.status(200).json(sessao);
+  } catch (erro) {
+    next(erro);
+  }
+}

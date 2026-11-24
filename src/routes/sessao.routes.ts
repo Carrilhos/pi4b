@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { criarSessao, listarSessoes } from '../controllers/sessao.controller';
+import { criarSessao, listarSessoes, buscarSessao } from '../controllers/sessao.controller';
 
 // a documentação do swagger fica no @openapi em cima de cada rota
 const router = Router();
@@ -159,3 +159,55 @@ router.get('/sessoes', listarSessoes);
 router.post('/sessoes', criarSessao);
 
 export default router;
+
+/**
+ * @openapi
+ * /sessoes/{id}:
+ *   get:
+ *     summary: Busca uma sessão pelo id
+ *     description: Devolve a sessão completa. É o endereço indicado no header Location do POST /sessoes.
+ *     tags: [Sessões]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Identificador da sessão (inteiro positivo).
+ *         schema: { type: integer, minimum: 1, example: 1 }
+ *     responses:
+ *       200:
+ *         description: Sessão encontrada.
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Sessao' }
+ *             example:
+ *               id: 1
+ *               monitorId: 1
+ *               monitorNome: Ana Souza
+ *               disciplinaId: 1
+ *               disciplinaNome: Banco de Dados
+ *               inicio: "2026-11-20T14:00:00"
+ *               fim: "2026-11-20T15:30:00"
+ *               local: Sala 204, Bloco C
+ *               vagas: 10
+ *               vagasDisponiveis: 10
+ *               status: ABERTA
+ *       400:
+ *         description: O id não é um inteiro positivo.
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Erro' }
+ *             example:
+ *               erro: REQUISICAO_INVALIDA
+ *               mensagem: Dados inválidos na requisição.
+ *               detalhes:
+ *                 - { campo: id, problema: deve ser um inteiro positivo }
+ *       404:
+ *         description: Não existe sessão com esse id.
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Erro' }
+ *             example:
+ *               erro: SESSAO_NAO_ENCONTRADA
+ *               mensagem: Sessão não encontrada.
+ */
+router.get('/sessoes/:id', buscarSessao);
