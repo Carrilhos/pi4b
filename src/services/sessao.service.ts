@@ -50,3 +50,14 @@ export async function criarSessao(dados: NovaSessao) {
 export async function listarSessoes(filtros: FiltrosSessao) {
   return sessaoRepository.listarSessoes(filtros);
 }
+
+// Busca uma sessão pelo id. Se não existir, lança 404.
+export async function buscarSessao(id: number) {
+  const sessao = await sessaoRepository.buscarSessaoPorId(id);
+
+  if (!sessao) {
+    throw new ErroNegocio(404, 'SESSAO_NAO_ENCONTRADA', 'Sessão não encontrada.');
+  }
+
+  return sessao;
+}
