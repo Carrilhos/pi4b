@@ -158,6 +158,7 @@ CREATE UNIQUE INDEX inscricao_unica_ativa
   ON inscricao (sessao_id, aluno_id)
   WHERE status = 'ATIVA';
 
+
 -- ========== Dados de exemplo (já inseridos no banco) ==========
 -- Alunos 1 a 4; disciplinas 1 a 3; monitor 1 (Ana: disciplinas 1 e 2);
 -- monitor 2 (Bruno: disciplina 3); sessão 1 em 20/11/2026, das 14:00 às 15:30.
