@@ -107,3 +107,23 @@ export async function inserirSessao(dados: NovaSessao) {
   );
   return resultado.rows[0].id;
 }
+
+
+// Quantas inscrições ATIVAS a sessão tem (usado para não deixar as vagas ficarem abaixo disso).
+export async function contarInscricoesAtivas(sessaoId: number): Promise<number> {
+  const resultado = await pool.query<{ total: number }>(
+    `SELECT COUNT(*)::int AS total FROM inscricao WHERE sessao_id = $1 AND status = 'ATIVA'`,
+    [sessaoId]
+  );
+  return resultado.rows[0].total;
+}
+
+// Atualiza os dados da sessão (o status não muda aqui).
+export async function atualizarSessao(id: number, dados: NovaSessao) {
+  await pool.query(
+    `UPDATE sessao
+     SET monitor_id = $1, disciplina_id = $2, inicio = $3, fim = $4, local = $5, vagas = $6
+     WHERE id = $7`,
+    [dados.monitorId, dados.disciplinaId, dados.inicio, dados.fim, dados.local, dados.vagas, id]
+  );
+}

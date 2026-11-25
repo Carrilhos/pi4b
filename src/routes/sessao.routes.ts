@@ -1,7 +1,9 @@
 import { Router } from 'express';
-import { criarSessao, listarSessoes, buscarSessao } from '../controllers/sessao.controller';
+import { criarSessao, listarSessoes, buscarSessao, atualizarSessao } from '../controllers/sessao.controller';
 
-// a documentação do swagger fica no @openapi em cima de cada rota
+// Liga cada URL à função do controller.
+// A documentação do Swagger fica no comentário @openapi logo acima de cada rota:
+// ao alterar uma rota, atualize o comentário dela na mesma alteração.
 const router = Router();
 
 /**
@@ -67,7 +69,7 @@ router.get('/sessoes', listarSessoes);
  *     summary: Cria uma sessão de monitoria
  *     description: >
  *       Cria a sessão com status ABERTA. O monitor precisa existir, estar ativo,
- *       atender a disciplina e não ter outra sessão no mesmo horário.
+ *       atender a disciplina (RN1) e não ter outra sessão no mesmo horário (RN2).
  *       Sessões que apenas se encostam (uma termina quando a outra começa) são permitidas.
  *     tags: [Sessões]
  *     requestBody:
@@ -132,7 +134,7 @@ router.get('/sessoes', listarSessoes);
  *                   erro: DISCIPLINA_NAO_ENCONTRADA
  *                   mensagem: Disciplina 99 não encontrada.
  *       409:
- *         description: O monitor já tem uma sessão nesse horário.
+ *         description: O monitor já tem uma sessão nesse horário (RN2).
  *         content:
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Erro' }
@@ -146,7 +148,7 @@ router.get('/sessoes', listarSessoes);
  *             schema: { $ref: '#/components/schemas/Erro' }
  *             examples:
  *               naoAtende:
- *                 summary: Monitor não atende a disciplina
+ *                 summary: Monitor não atende a disciplina (RN1)
  *                 value:
  *                   erro: MONITOR_NAO_ATENDE_DISCIPLINA
  *                   mensagem: O monitor não atende esta disciplina.
@@ -157,8 +159,6 @@ router.get('/sessoes', listarSessoes);
  *                   mensagem: O monitor está inativo e não pode criar sessões.
  */
 router.post('/sessoes', criarSessao);
-
-export default router;
 
 /**
  * @openapi
@@ -185,8 +185,8 @@ export default router;
  *               monitorNome: Ana Souza
  *               disciplinaId: 1
  *               disciplinaNome: Banco de Dados
- *               inicio: "2026-11-20T14:00:00"
- *               fim: "2026-11-20T15:30:00"
+ *               inicio: '2026-11-20T14:00:00'
+ *               fim: '2026-11-20T15:30:00'
  *               local: Sala 204, Bloco C
  *               vagas: 10
  *               vagasDisponiveis: 10
@@ -211,3 +211,120 @@ export default router;
  *               mensagem: Sessão não encontrada.
  */
 router.get('/sessoes/:id', buscarSessao);
+
+/**
+ * @openapi
+ * /sessoes/{id}:
+ *   put:
+ *     summary: Altera uma sessão de monitoria
+ *     description: >
+ *       Altera horário, local e vagas de uma sessão ABERTA. O corpo é o mesmo do POST /sessoes
+ *       e as regras do monitor (ativo, atende a disciplina, sem horário sobreposto) são conferidas de novo;
+ *       a própria sessão não conta como conflito. As vagas não podem ficar abaixo do número de inscrições ativas.
+ *     tags: [Sessões]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Identificador da sessão (inteiro positivo).
+ *         schema: { type: integer, minimum: 1, example: 1 }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { $ref: '#/components/schemas/NovaSessao' }
+ *           example:
+ *             monitorId: 1
+ *             disciplinaId: 1
+ *             inicio: '2026-11-20T16:00:00'
+ *             fim: '2026-11-20T17:30:00'
+ *             local: Sala 101, Bloco A
+ *             vagas: 15
+ *     responses:
+ *       200:
+ *         description: Sessão atualizada.
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Sessao' }
+ *             example:
+ *               id: 1
+ *               monitorId: 1
+ *               monitorNome: Ana Souza
+ *               disciplinaId: 1
+ *               disciplinaNome: Banco de Dados
+ *               inicio: '2026-11-20T16:00:00'
+ *               fim: '2026-11-20T17:30:00'
+ *               local: Sala 101, Bloco A
+ *               vagas: 15
+ *               vagasDisponiveis: 15
+ *               status: ABERTA
+ *       400:
+ *         description: Id ou corpo com formato inválido (todos os problemas do corpo são listados em detalhes).
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Erro' }
+ *             example:
+ *               erro: REQUISICAO_INVALIDA
+ *               mensagem: Dados inválidos na requisição.
+ *               detalhes:
+ *                 - campo: vagas
+ *                   problema: obrigatório, deve ser um inteiro maior que zero
+ *       404:
+ *         description: Sessão, monitor ou disciplina não encontrado.
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Erro' }
+ *             examples:
+ *               sessao:
+ *                 summary: Sessão inexistente
+ *                 value:
+ *                   erro: SESSAO_NAO_ENCONTRADA
+ *                   mensagem: Sessão não encontrada.
+ *               monitor:
+ *                 summary: Monitor inexistente
+ *                 value:
+ *                   erro: MONITOR_NAO_ENCONTRADO
+ *                   mensagem: Monitor 99 não encontrado.
+ *               disciplina:
+ *                 summary: Disciplina inexistente
+ *                 value:
+ *                   erro: DISCIPLINA_NAO_ENCONTRADA
+ *                   mensagem: Disciplina 99 não encontrada.
+ *       409:
+ *         description: O monitor já tem outra sessão nesse horário (RN2).
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Erro' }
+ *             example:
+ *               erro: CONFLITO_DE_HORARIO
+ *               mensagem: O monitor já possui uma sessão entre 16:00 e 17:30 nesta data.
+ *       422:
+ *         description: Regra de negócio violada.
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Erro' }
+ *             examples:
+ *               naoAberta:
+ *                 summary: Sessão que não está ABERTA
+ *                 value:
+ *                   erro: SESSAO_NAO_ABERTA
+ *                   mensagem: Só é possível alterar sessões com status ABERTA.
+ *               vagas:
+ *                 summary: Vagas abaixo das inscrições ativas
+ *                 value:
+ *                   erro: VAGAS_MENOR_QUE_INSCRITOS
+ *                   mensagem: A sessão já tem 5 inscrições ativas; as vagas não podem ser menos que isso.
+ *               naoAtende:
+ *                 summary: Monitor não atende a disciplina (RN1)
+ *                 value:
+ *                   erro: MONITOR_NAO_ATENDE_DISCIPLINA
+ *                   mensagem: O monitor não atende esta disciplina.
+ *               inativo:
+ *                 summary: Monitor inativo (RN-A)
+ *                 value:
+ *                   erro: MONITOR_INATIVO
+ *                   mensagem: O monitor está inativo e não pode criar sessões.
+ */
+router.put('/sessoes/:id', atualizarSessao);
+
+export default router;
