@@ -19,4 +19,7 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(especificacao));
 // tem que ficar por último
 app.use(tratarErros);
 
+
+//Uma diff para ser removida
+
 export default app;
