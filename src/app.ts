@@ -3,6 +3,7 @@ import swaggerUi from 'swagger-ui-express';
 import sessaoRoutes from './routes/sessao.routes';
 import inscricaoRoutes from './routes/inscricao.routes';
 import academicoRoutes from './routes/academico.routes';
+import monitorRoutes from './routes/monitor.routes';
 import { especificacao } from './swagger';
 import { tratarErros } from './erros';
 
@@ -13,6 +14,7 @@ app.use(express.json());
 app.use(sessaoRoutes);
 app.use(inscricaoRoutes);
 app.use(academicoRoutes);
+app.use(monitorRoutes);
 
 // swagger
 app.get('/docs.json', (req, res) => {
