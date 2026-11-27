@@ -85,7 +85,7 @@ export async function atualizarSessao(id: number, dados: NovaSessao) {
   await verificarRegras(dados, id);
 
   // 4. As vagas novas não podem ser menores que o número de inscrições ativas.
-  const inscritos = sessaoRepository.contarInscricoesAtivas(id) as unknown as number;
+  const inscritos = await sessaoRepository.contarInscricoesAtivas(id);
   if (dados.vagas < inscritos) {
     throw new ErroNegocio(
       422,
