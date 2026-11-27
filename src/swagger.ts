@@ -102,6 +102,16 @@ export const especificacao = swaggerJsdoc({
             curso: { type: 'string', example: 'Análise e Desenvolvimento de Sistemas' },
           },
         },
+        Monitor: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer', example: 1 },
+            alunoId: { type: 'integer', example: 1 },
+            nome: { type: 'string', example: 'Ana Souza' },
+            ativo: { type: 'boolean', example: true },
+            disciplinas: { type: 'array', items: { type: 'integer' }, example: [1, 2] },
+          },
+        },
       },
     },
   },
