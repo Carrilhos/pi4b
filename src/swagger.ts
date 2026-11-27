@@ -75,6 +75,33 @@ export const especificacao = swaggerJsdoc({
             },
           },
         },
+        Inscricao: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer', example: 1 },
+            sessaoId: { type: 'integer', example: 1 },
+            alunoId: { type: 'integer', example: 3 },
+            status: { type: 'string', enum: ['ATIVA', 'CANCELADA'], example: 'ATIVA' },
+            criadaEm: { type: 'string', example: '2026-11-24T15:30:00' },
+          },
+        },
+        Disciplina: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer', example: 1 },
+            codigo: { type: 'string', example: 'ADS101' },
+            nome: { type: 'string', example: 'Banco de Dados' },
+          },
+        },
+        Aluno: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer', example: 1 },
+            nome: { type: 'string', example: 'Ana Souza' },
+            matricula: { type: 'string', example: '20230001' },
+            curso: { type: 'string', example: 'Análise e Desenvolvimento de Sistemas' },
+          },
+        },
       },
     },
   },

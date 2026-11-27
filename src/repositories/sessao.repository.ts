@@ -84,16 +84,17 @@ export async function buscarSessaoPorId(id: number) {
 }
 
 // conflito de horário: sobrepõe se inicio_existente < novo_fim e fim_existente > novo_inicio
-export async function buscarConflito(monitorId: number, inicio: string, fim: string) {
+export async function buscarConflito(monitorId: number, inicio: string, fim: string, sessaoIgnorada: number | null = null) {
   const resultado = await pool.query<{ inicio: string; fim: string }>(
     `SELECT to_char(inicio, 'HH24:MI') AS inicio, to_char(fim, 'HH24:MI') AS fim
      FROM sessao
      WHERE monitor_id = $1
        AND status <> 'CANCELADA'
        AND inicio < $3
-       AND fim    > $2
+       AND fim > $2
+       AND ($4::int IS NULL OR id <> $4)
      LIMIT 1`,
-    [monitorId, inicio, fim]
+    [monitorId, inicio, fim, sessaoIgnorada]
   );
   return resultado.rows[0];
 }
